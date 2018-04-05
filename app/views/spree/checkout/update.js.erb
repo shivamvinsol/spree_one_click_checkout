@@ -1,0 +1,16 @@
+$('div#checkout').html("<%= j render(partial: 'spree/checkout/form') %>");
+
+<% if @order.address? %>
+  Spree.onAddress()
+<% elsif @order.delivery? %>
+  var input = {
+    orderTotal: $('#summary-order-total'),
+    shipmentTotal: $("[data-hook='shipping-total']"),
+    shippingMethods: $("input[data-behavior='shipping-method-selector']")
+  };
+  new ShippingTotalManager(input).bindEvent();
+<% elsif @order.payment? %>
+  alert(1);
+  Spree.onPayment()
+<% end %>
+
