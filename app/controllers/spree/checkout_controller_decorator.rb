@@ -30,7 +30,6 @@ Spree::CheckoutController.class_eval do
           unless @order.next
             flash.now[:error] = @order.errors.full_messages.join("\n")
             render file: 'spree/checkout/update.js.erb'
-            # render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return
           end
 
           if @order.completed?
@@ -38,7 +37,6 @@ Spree::CheckoutController.class_eval do
             flash.now[:notice] = Spree.t(:order_processed_successfully)
             flash.now['order_completed'] = true
             render file: 'spree/checkout/update.js.erb'
-            # render js: %(window.location.href="#{completion_route}") and return
           else
             setup_for_current_state
           end

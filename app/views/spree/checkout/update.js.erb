@@ -1,5 +1,7 @@
-<% if @order.complete? %>
-  $('div#content').html();
+<% if @order.blank? %>
+  $('div#checkout').html("order does not exist");
+<% elsif @order.complete? %>
+  $('div#content').html("<%= j render(file: 'spree/orders/show') %>");
 <% else %>
   $('div#checkout').html("<%= j render(partial: 'spree/checkout/form') %>");
 
