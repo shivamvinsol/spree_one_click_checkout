@@ -10,7 +10,5 @@ $('div#checkout').html("<%= j render(partial: 'spree/checkout/form') %>");
   };
   new ShippingTotalManager(input).bindEvent();
 <% elsif @order.payment? %>
-  alert(1);
   Spree.onPayment()
 <% end %>
-

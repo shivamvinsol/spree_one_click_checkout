@@ -33,12 +33,14 @@ Spree::CheckoutController.class_eval do
         end
       else
         respond_to do |format|
+          setup_for_current_state
           format.html {redirect_to checkout_state_path(@order.state)}
-          format.js #{ render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return }
+          format.js
         end
       end
     else
       respond_to do |format|
+        setup_for_current_state
         format.html { render :edit }
         format.js
       end
@@ -134,6 +136,26 @@ Spree::CheckoutController.class_eval do
         end
       end
     end
+
+    def add_store_credit_payments
+      if params.key?(:apply_store_credit)
+        @order.add_store_credit_payments
+
+        # Remove other payment method parameters.
+        params[:order].delete(:payments_attributes)
+        params[:order].delete(:existing_card)
+        params.delete(:payment_source)
+
+        # Return to the Payments page if additional payment is needed.
+        if @order.payments.valid.sum(:amount) < @order.total
+          respond_to do |format|
+            format.html { redirect_to checkout_state_path(@order.state) and return }
+            format.js #{ render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return }
+          end
+        end
+      end
+    end
+
 
     def remove_store_credit_payments
       if params.key?(:remove_store_credit)
