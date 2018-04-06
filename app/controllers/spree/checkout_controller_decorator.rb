@@ -1,48 +1,50 @@
 Spree::CheckoutController.class_eval do
 
   def update
-    if @order.update_from_params(params, permitted_checkout_attributes, request.headers.env)
-      @order.temporary_address = !params[:save_user_address]
+    respond_to do |format|
+      format.html do
+        if @order.update_from_params(params, permitted_checkout_attributes, request.headers.env)
+          @order.temporary_address = !params[:save_user_address]
 
-      unless @order.next
-        respond_to do |format|
-          format.html do
+          unless @order.next
             flash[:error] = @order.errors.full_messages.join("\n")
             redirect_to checkout_state_path(@order.state) and return
           end
-          format.js do
-            flash.now[:error] = @order.errors.full_messages.join("\n")
-            render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return
-          end
-        end
-      end
 
-      if @order.completed?
-        @current_order = nil
-        respond_to do |format|
-          format.html do
+          if @order.completed?
+            @current_order = nil
             flash.notice = Spree.t(:order_processed_successfully)
             flash['order_completed'] = true
             redirect_to completion_route
+          else
+            redirect_to checkout_state_path(@order.state)
           end
-          format.js do
-            flash.now[:notice] = Spree.t(:order_processed_successfully)
-            flash.now['order_completed'] = true
-            render js: %(window.location.href="#{completion_route}") and return
-          end
-        end
-      else
-        respond_to do |format|
-          setup_for_current_state
-          format.html {redirect_to checkout_state_path(@order.state)}
-          format.js
+        else
+          render :edit
         end
       end
-    else
-      respond_to do |format|
-        setup_for_current_state
-        format.html { render :edit }
-        format.js
+      format.js do
+        if @order.update_from_params(params, permitted_checkout_attributes, request.headers.env)
+          @order.temporary_address = !params[:save_user_address]
+
+          unless @order.next
+            flash.now[:error] = @order.errors.full_messages.join("\n")
+            render file: 'spree/checkout/update.js.erb'
+            # render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return
+          end
+
+          if @order.completed?
+            @current_order = nil
+            flash.now[:notice] = Spree.t(:order_processed_successfully)
+            flash.now['order_completed'] = true
+            render file: 'spree/checkout/update.js.erb'
+            # render js: %(window.location.href="#{completion_route}") and return
+          else
+            setup_for_current_state
+          end
+        else
+          setup_for_current_state
+        end
       end
     end
   end
@@ -55,7 +57,7 @@ Spree::CheckoutController.class_eval do
         @order.update_column(:state, correct_state)
         respond_to do |format|
           format.html { redirect_to checkout_state_path(@order.state) }
-          format.js { render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return }
+          format.js { render file: 'spree/checkout/update.js.erb' and return }
         end
       end
     end
@@ -65,7 +67,7 @@ Spree::CheckoutController.class_eval do
       unless @order
         respond_to do |format|
           format.html { redirect_to spree.cart_path and return }
-          format.js { render js: %(window.location.href="#{spree.cart_path}") and return }
+          format.js { render file: 'spree/checkout/update.js.erb' and return }
         end
       end
     end
@@ -82,7 +84,7 @@ Spree::CheckoutController.class_eval do
               end
               format.js do
                 flash.now[:error] = Spree.t(:order_already_updated)
-                render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return
+                format.js { render file: 'spree/checkout/update.js.erb' and return }
               end
             end
           end
@@ -97,7 +99,7 @@ Spree::CheckoutController.class_eval do
         if @order.can_go_to_state?(params[:state]) and !skip_state_validation?
           respond_to do |format|
             format.html { redirect_to checkout_state_path(@order.state) and return }
-            format.js { render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return }
+            format.js { render file: 'spree/checkout/update.js.erb' and return }
           end
         end
         @order.state = params[:state]
@@ -108,7 +110,7 @@ Spree::CheckoutController.class_eval do
       unless @order.checkout_allowed?
         respond_to do |format|
           format.html { redirect_to spree.cart_path }
-          format.js { render js: %(window.location.href="#{spree.cart_path}") and return }
+          format.js { render file: 'spree/checkout/update.js.erb' and return }
         end
       end
     end
@@ -117,7 +119,7 @@ Spree::CheckoutController.class_eval do
       if @order.completed?
         respond_to do |format|
           format.html { redirect_to spree.cart_path }
-          format.js { render js: %(window.location.href="#{spree.cart_path}") and return }
+          format.js { render file: 'spree/checkout/update.js.erb' and return }
         end
       end
     end
@@ -131,7 +133,7 @@ Spree::CheckoutController.class_eval do
           end
           format.js do
             flash.now[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity)
-            render js: %(window.location.href="#{spree.cart_path}") and return
+            format.js { render file: 'spree/checkout/update.js.erb' and return }
           end
         end
       end
@@ -150,7 +152,7 @@ Spree::CheckoutController.class_eval do
         if @order.payments.valid.sum(:amount) < @order.total
           respond_to do |format|
             format.html { redirect_to checkout_state_path(@order.state) and return }
-            format.js #{ render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return }
+            format.js { render file: 'spree/checkout/update.js.erb' and return }
           end
         end
       end
@@ -162,7 +164,7 @@ Spree::CheckoutController.class_eval do
         @order.remove_store_credit_payments
         respond_to do |format|
           format.html { redirect_to checkout_state_path(@order.state) and return }
-          format.js { render js: %(window.location.href="#{checkout_state_path(@order.state)}") and return }
+          format.js { render file: 'spree/checkout/update.js.erb' and return }
         end
       end
     end
@@ -172,7 +174,7 @@ Spree::CheckoutController.class_eval do
       @order.errors.add(:base, exception.message)
       respond_to do |format|
         format.html { render :edit }
-        format.js
+        format.js { render file: 'spree/checkout/update.js.erb' and return }
       end
     end
 end
