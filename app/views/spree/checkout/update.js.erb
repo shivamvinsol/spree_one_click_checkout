@@ -19,6 +19,8 @@
   <% end %>
 <% end %>
 
-<% if flash[:alert] %>
-  $('[data-hook="flash_messages"]').html("<%= flash[:alert] %>")
+<% if flash[:error] %>
+  $('[data-hook="flash_messages"]').html("<%= flash[:error] %>").addClass("alert-danger");
+<% else %>
+  $('[data-hook="flash_messages"]').removeClass("alert-danger");
 <% end %>

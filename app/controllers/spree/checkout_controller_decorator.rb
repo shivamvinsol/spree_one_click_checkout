@@ -1,6 +1,7 @@
 Spree::CheckoutController.class_eval do
 
   def update
+    byebug
     if @order.update_from_params(params, permitted_checkout_attributes, request.headers.env)
       @order.temporary_address = !params[:save_user_address]
       unless @order.next
@@ -54,7 +55,7 @@ Spree::CheckoutController.class_eval do
           format.html { redirect_to checkout_state_path(@order.state) }
           format.js do
             setup_for_current_state
-            render action: 'update' and return
+            render action: 'update'
           end
         end
       end
@@ -64,9 +65,9 @@ Spree::CheckoutController.class_eval do
       @order = current_order(lock: true)
       unless @order
         respond_to do |format|
-          format.html { redirect_to spree.cart_path and return }
+          format.html { redirect_to spree.cart_path }
           format.js do
-            render action: 'update' and return
+            render action: 'update'
           end
         end
       end
@@ -80,12 +81,12 @@ Spree::CheckoutController.class_eval do
             respond_to do |format|
               format.html do
                 flash[:error] = Spree.t(:order_already_updated)
-                redirect_to checkout_state_path(@order.state) and return
+                redirect_to checkout_state_path(@order.state)
               end
               format.js do
                 flash.now[:error] = Spree.t(:order_already_updated)
                 setup_for_current_state
-                render action: 'update' and return
+                render action: 'update'
               end
             end
           end
@@ -99,10 +100,10 @@ Spree::CheckoutController.class_eval do
       if params[:state]
         if @order.can_go_to_state?(params[:state]) and !skip_state_validation?
           respond_to do |format|
-            format.html { redirect_to checkout_state_path(@order.state) and return }
+            format.html { redirect_to checkout_state_path(@order.state) }
             format.js do
               setup_for_current_state
-              render action: 'update' and return
+              render action: 'update'
             end
           end
         end
@@ -116,7 +117,7 @@ Spree::CheckoutController.class_eval do
           format.html { redirect_to spree.cart_path }
           format.js do
             setup_for_current_state
-            render action: 'update' and return
+            render action: 'update'
           end
         end
       end
@@ -128,14 +129,14 @@ Spree::CheckoutController.class_eval do
           format.html { redirect_to spree.cart_path }
           format.js do
             setup_for_current_state
-            render action: 'update' and return
+            render action: 'update'
           end
         end
       end
     end
 
     def ensure_sufficient_stock_lines
-      unless @order.insufficient_stock_lines.present?
+      if @order.insufficient_stock_lines.present?
         respond_to do |format|
           format.html do
             flash[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity)
@@ -144,7 +145,7 @@ Spree::CheckoutController.class_eval do
           format.js do
             flash.now[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity)
             setup_for_current_state
-            render action: 'update' and return
+            render action: 'update'
           end
         end
       end
@@ -165,7 +166,7 @@ Spree::CheckoutController.class_eval do
             format.html { redirect_to checkout_state_path(@order.state) and return }
             format.js do
               setup_for_current_state
-              render action: 'update' and return
+              render action: 'update'
             end
           end
         end
@@ -180,7 +181,7 @@ Spree::CheckoutController.class_eval do
           format.html { redirect_to checkout_state_path(@order.state) and return }
           format.js do
             setup_for_current_state
-            render action: 'update' and return
+            render action: 'update'
           end
         end
       end
@@ -193,7 +194,7 @@ Spree::CheckoutController.class_eval do
         format.html { render :edit }
         format.js do
           setup_for_current_state
-          render action: 'update' and return
+          render action: 'update'
         end
       end
     end
