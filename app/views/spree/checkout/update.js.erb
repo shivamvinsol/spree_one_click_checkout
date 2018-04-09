@@ -1,5 +1,5 @@
 <% if @order.blank? %>
-  $('div#checkout').html("order does not exist");
+  $(window.location.replace('/cart'));
 <% elsif @order.complete? %>
   $('div#content').html("<%= j render(file: 'spree/orders/show') %>");
 <% else %>
