@@ -1,7 +1,7 @@
 Spree::CheckoutController.class_eval do
 
+  # removed replication
   def update
-    byebug
     if @order.update_from_params(params, permitted_checkout_attributes, request.headers.env)
       @order.temporary_address = !params[:save_user_address]
       unless @order.next
@@ -12,7 +12,7 @@ Spree::CheckoutController.class_eval do
           end
           format.js do
             flash.now[:error] = @order.errors.full_messages.join("\n")
-            render action: 'update' and return
+            render :update and return
           end
         end
       end
@@ -28,7 +28,7 @@ Spree::CheckoutController.class_eval do
           format.js do
             flash.now[:notice] = Spree.t(:order_processed_successfully)
             flash.now['order_completed'] = true
-            render action: 'update'
+            render :update
           end
         end
       else
@@ -46,6 +46,7 @@ Spree::CheckoutController.class_eval do
   end
 
   private
+  # added setup_for_current_state action in before_actions, removed return statement
 
     def ensure_valid_state
       if @order.state != correct_state and !skip_state_validation?
@@ -55,7 +56,7 @@ Spree::CheckoutController.class_eval do
           format.html { redirect_to checkout_state_path(@order.state) }
           format.js do
             setup_for_current_state
-            render action: 'update'
+            render :update
           end
         end
       end
@@ -67,7 +68,7 @@ Spree::CheckoutController.class_eval do
         respond_to do |format|
           format.html { redirect_to spree.cart_path }
           format.js do
-            render action: 'update'
+            render :update
           end
         end
       end
@@ -86,7 +87,7 @@ Spree::CheckoutController.class_eval do
               format.js do
                 flash.now[:error] = Spree.t(:order_already_updated)
                 setup_for_current_state
-                render action: 'update'
+                render :update
               end
             end
           end
@@ -103,7 +104,7 @@ Spree::CheckoutController.class_eval do
             format.html { redirect_to checkout_state_path(@order.state) }
             format.js do
               setup_for_current_state
-              render action: 'update'
+              render :update
             end
           end
         end
@@ -117,7 +118,7 @@ Spree::CheckoutController.class_eval do
           format.html { redirect_to spree.cart_path }
           format.js do
             setup_for_current_state
-            render action: 'update'
+            render :update
           end
         end
       end
@@ -129,7 +130,7 @@ Spree::CheckoutController.class_eval do
           format.html { redirect_to spree.cart_path }
           format.js do
             setup_for_current_state
-            render action: 'update'
+            render :update
           end
         end
       end
@@ -145,7 +146,7 @@ Spree::CheckoutController.class_eval do
           format.js do
             flash.now[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity)
             setup_for_current_state
-            render action: 'update'
+            render :update
           end
         end
       end
@@ -166,7 +167,7 @@ Spree::CheckoutController.class_eval do
             format.html { redirect_to checkout_state_path(@order.state) and return }
             format.js do
               setup_for_current_state
-              render action: 'update'
+              render :update
             end
           end
         end
@@ -181,7 +182,7 @@ Spree::CheckoutController.class_eval do
           format.html { redirect_to checkout_state_path(@order.state) and return }
           format.js do
             setup_for_current_state
-            render action: 'update'
+            render :update
           end
         end
       end
@@ -194,7 +195,7 @@ Spree::CheckoutController.class_eval do
         format.html { render :edit }
         format.js do
           setup_for_current_state
-          render action: 'update'
+          render :update
         end
       end
     end
