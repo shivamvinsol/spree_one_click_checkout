@@ -135,7 +135,7 @@ Spree::CheckoutController.class_eval do
     end
 
     def ensure_sufficient_stock_lines
-      if @order.insufficient_stock_lines.present?
+      unless @order.insufficient_stock_lines.present?
         respond_to do |format|
           format.html do
             flash[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity)
@@ -143,10 +143,8 @@ Spree::CheckoutController.class_eval do
           end
           format.js do
             flash.now[:error] = Spree.t(:inventory_error_flash_for_insufficient_quantity)
-            format.js do
-              setup_for_current_state
-              render action: 'update' and return
-            end
+            setup_for_current_state
+            render action: 'update' and return
           end
         end
       end

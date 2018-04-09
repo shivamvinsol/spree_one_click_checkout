@@ -18,3 +18,7 @@
     Spree.onPayment()
   <% end %>
 <% end %>
+
+<% if flash[:alert] %>
+  $('[data-hook="flash_messages"]').html("<%= flash[:alert] %>")
+<% end %>
